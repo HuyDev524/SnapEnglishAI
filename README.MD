@@ -19,8 +19,8 @@ Works in both online mode (cloud AI) and offline mode (local browser AI).
 | Frontend | React + Vite + TailwindCSS |
 | Backend | Node.js + Express |
 | Database | MongoDB Atlas via Mongoose |
-| AI Vision | Gemini 1.5 Flash (primary) → OpenRouter (fallback) → COCO-SSD (offline) |
-| AI Language | Gemini 1.5 Flash (primary) → Groq (fallback) → Mistral (fallback) → vocabulary.json (offline) |
+| AI Vision | Gemini 2.5 Flash (primary) → OpenRouter (fallback) → COCO-SSD (offline) |
+| AI Language | Gemini 2.5 Flash (primary) → Groq (fallback) → Mistral (fallback) → vocabulary.json (offline) |
 | Speech/Pronunciation | Google Translate TTS API (primary) → Web Speech API (fallback) |
 | Frontend deploy | Vercel |
 | Backend deploy | Render.com |
@@ -32,7 +32,8 @@ Works in both online mode (cloud AI) and offline mode (local browser AI).
 Create `.env` in `/server`:
 ```
 GEMINI_API_KEY=
-GEMINI_OCR_MODEL=gemini-1.5-flash
+GEMINI_OCR_MODEL=gemini-2.5-flash
+GEMINI_TEXT_MODEL=gemini-2.5-flash
 OPENROUTER_API_KEY=
 GROQ_API_KEY=
 MISTRAL_API_KEY=
@@ -106,6 +107,9 @@ VITE_API_URL=http://localhost:5000
 │   └── package.json
 │
 └── server/                         # Node.js + Express backend
+    ├── controllers/
+    │   ├── detectController.js
+    │   └── flashcardsController.js
     ├── routes/
     │   ├── detect.js
     │   └── flashcards.js
