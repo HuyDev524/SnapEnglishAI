@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: snapenglish-api
+    env: node
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_OCR_MODEL
+        value: gemini-2.5-flash
+      - key: GEMINI_TEXT_MODEL
+        value: gemini-2.5-flash
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: MISTRAL_API_KEY
+        sync: false
+      - key: MONGODB_URI
+        sync: false
