@@ -36,8 +36,33 @@ const normalizeVocabulary = (items) => {
  * Nếu tất cả đều thất bại, trả về danh sách từ cơ bản chỉ có tiếng Anh.
  */
 const getVocabularyFromLabels = async (labels) => {
+  // Loại bỏ các nhãn trùng lặp (không phân biệt hoa thường) và giới hạn tối đa 20 nhãn độc lập
+  const uniqueLabels = [];
+  const seen = new Set();
+  
+  if (Array.isArray(labels)) {
+    for (const label of labels) {
+      const cleanLabel = String(label).trim().toLowerCase();
+      if (cleanLabel && !seen.has(cleanLabel)) {
+        seen.add(cleanLabel);
+        // Giữ lại định dạng gốc của nhãn để gửi đi (hoặc đã chuẩn hóa)
+        uniqueLabels.push(String(label).trim());
+      }
+    }
+  }
+
+  // Giới hạn tối đa 20 nhãn để tránh quá tải token và lỗi bị ngắt dòng JSON (truncation)
+  const finalLabels = uniqueLabels.slice(0, 20);
+
+  if (finalLabels.length === 0) {
+    console.log('[Vocabulary] Không có nhãn hợp lệ để sinh từ vựng, trả về static fallback');
+    return { vocabulary: [], fallback: 'static' };
+  }
+
+  console.log(`[Vocabulary] Bắt đầu sinh từ vựng cho ${finalLabels.length} nhãn độc lập: [${finalLabels.join(', ')}]`);
+
   const sources = [
-    //name: 'gemini', fn: geminiService.getVocabulary },
+    {name: 'gemini', fn: geminiService.getVocabulary },
     { name: 'openrouter', fn: openrouterService.getVocabulary },
     { name: 'groq', fn: groqService.getVocabulary },
     { name: 'mistral', fn: mistralService.getVocabulary }
@@ -46,12 +71,14 @@ const getVocabularyFromLabels = async (labels) => {
   for (let i = 0; i < sources.length; i++) {
     const source = sources[i];
     
-    // Đợi trước mọi request (kể cả request đầu tiên) để tránh 429 nếu gọi API liên tiếp
-    console.log(`[Vocabulary] Đang chờ 3500ms trước khi gọi ${source.name}...`);
-    await delay(3500);
+    // TỐI ƯU: Chỉ đợi 500ms nếu kích hoạt fallback (từ lượt gọi thứ 2 trở đi) để tránh lãng phí thời gian ở lượt đầu
+    if (i > 0) {
+      console.log(`[Vocabulary] Đang chờ 500ms trước khi gọi fallback ${source.name}...`);
+      await delay(500);
+    }
     
     try {
-      const result = await source.fn(labels);
+      const result = await source.fn(finalLabels);
       const vocabulary = normalizeVocabulary(result);
       if (vocabulary.length > 0) {
         console.log(`[Vocabulary] Sinh từ vựng thành công qua ${source.name}`);
@@ -64,8 +91,8 @@ const getVocabularyFromLabels = async (labels) => {
   }
 
   console.log('[Vocabulary] Tất cả cloud AI thất bại, trả về static fallback');
-  // Nếu tất cả API đều thất bại, tạo mảng trống để client tự lookup tĩnh
-  const staticFallbackVocab = labels.map((label) => ({
+  // Nếu tất cả API đều thất bại, tạo mảng trống để client tự lookup tĩnh cho các nhãn duy nhất
+  const staticFallbackVocab = finalLabels.map((label) => ({
     english: String(label).trim(),
     ipa: '',
     vietnamese: '',
@@ -82,7 +109,7 @@ const getVocabularyFromLabels = async (labels) => {
  */
 const findLabelsWithFallback = async (imageBase64, mimeType) => {
   const detectors = [
-    //name: 'gemini', fn: geminiService.detectObjects },
+    {name: 'gemini', fn: geminiService.detectObjects },
     { name: 'openrouter', fn: openrouterService.detectObjects },
     { name: 'coco', fn: cocoService.detectObjects }
   ];
@@ -91,9 +118,11 @@ const findLabelsWithFallback = async (imageBase64, mimeType) => {
     const detector = detectors[i];
     
     if (detector.name !== 'coco') {
-      // Đợi trước mọi request đến cloud AI
-      console.log(`[Detect] Đang chờ 3500ms trước khi gọi ${detector.name}...`);
-      await delay(3500);
+      // TỐI ƯU: Chỉ đợi 500ms nếu kích hoạt fallback (từ lượt gọi thứ 2 trở đi) để tránh lãng phí thời gian ở lượt đầu
+      if (i > 0) {
+        console.log(`[Detect] Đang chờ 500ms trước khi gọi fallback ${detector.name}...`);
+        await delay(500);
+      }
     }
     
     try {

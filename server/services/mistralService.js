@@ -5,6 +5,38 @@ const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY;
 const MISTRAL_BASE_URL = 'https://api.mistral.ai';
 
 /**
+ * Bộ giải mã JSON siêu mạnh mẽ để bóc tách, dọn dẹp và sửa các lỗi cú pháp
+ * thường gặp như trailing commas trong phản hồi từ LLM nhỏ.
+ */
+const parseRobustJson = (raw, serviceName) => {
+  if (!raw) return [];
+  let cleaned = String(raw).trim();
+  
+  // Tìm khối mảng JSON [ ... ]
+  const jsonMatch = cleaned.match(/\[([\s\S]*)\]/);
+  if (jsonMatch) {
+    cleaned = jsonMatch[0];
+  }
+  
+  // Dọn dẹp ký tự markdown
+  cleaned = cleaned
+    .replace(/```json/gi, '')
+    .replace(/```/g, '')
+    .trim();
+    
+  // Xử lý trailing commas (dấu phẩy thừa ở cuối trước ngoặc ] hoặc })
+  cleaned = cleaned.replace(/,\s*([\]}])/g, '$1');
+  
+  try {
+    return JSON.parse(cleaned);
+  } catch (error) {
+    console.error(`[${serviceName} JSON Parse Error] Thất bại khi phân tích cú pháp JSON.`);
+    console.error(`[${serviceName} Raw Content]:\n`, raw);
+    throw new Error(`Không thể parse dữ liệu JSON từ ${serviceName}`);
+  }
+};
+
+/**
  * [Fallback 3 cho AI Text] Dùng Mistral AI để sinh từ vựng JSON nếu các AI khác đều thất bại
  */
 const getVocabulary = async (labels) => {
@@ -22,7 +54,7 @@ const getVocabulary = async (labels) => {
     {
       model: 'mistral-small-latest',
       messages: [{ role: 'user', content: prompt }],
-      max_tokens: 500,
+      max_tokens: 2000, // Nâng từ 500 lên 2000 để tránh truncation
       temperature: 0.2
     },
     {
@@ -35,18 +67,7 @@ const getVocabulary = async (labels) => {
   );
 
   const raw = response.data?.choices?.[0]?.message?.content;
-  if (!raw) return [];
-
-  // Phân tích cú pháp JSON an toàn
-  try {
-    return JSON.parse(raw);
-  } catch (error) {
-    const jsonMatch = String(raw).match(/\[.*\]/s);
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]);
-    }
-    throw new Error('Không thể parse dữ liệu JSON từ Mistral');
-  }
+  return parseRobustJson(raw, 'Mistral');
 };
 
 module.exports = {

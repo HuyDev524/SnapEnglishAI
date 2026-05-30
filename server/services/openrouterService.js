@@ -6,15 +6,117 @@ const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
 /**
  * Chuẩn hóa kết quả trả về từ OpenRouter, trả về mảng các nhãn (ví dụ: ['bottle', 'cup'])
  */
+/**
+ * Chuẩn hóa kết quả trả về từ OpenRouter, loại bỏ hội thoại thừa,
+ * phân tích dòng có số thứ tự/ký tự đầu dòng và lọc nhãn rác.
+ */
 const normalizeLabels = (raw) => {
   if (!raw) return [];
-  return String(raw)
-    .replace(/\n/g, ',')
-    .replace(/\s*,\s*/g, ',')
-    .replace(/\.$/, '')
-    .split(',')
-    .map((item) => item.trim())
-    .filter(Boolean);
+  
+  const items = [];
+  const lines = String(raw).split(/\n+/);
+  
+  for (let line of lines) {
+    line = line.trim();
+    if (!line) continue;
+    
+    const lowerLine = line.toLowerCase();
+    // Bỏ qua các dòng hội thoại giới thiệu/kết luận phổ biến
+    if (
+      lowerLine.startsWith('here is') ||
+      lowerLine.startsWith('here are') ||
+      lowerLine.startsWith('i can see') ||
+      lowerLine.startsWith('this image') ||
+      lowerLine.startsWith('the image') ||
+      lowerLine.startsWith('in this image') ||
+      lowerLine.startsWith('there is') ||
+      lowerLine.startsWith('there are') ||
+      lowerLine.startsWith('sure') ||
+      lowerLine.includes('visible object')
+    ) {
+      continue;
+    }
+    
+    // Xóa ký tự đầu dòng như số thứ tự (e.g. "1. ", "2) ", "- ", "* ", "• ")
+    let cleanLine = line
+      .replace(/^[\d+\.\-\*\•\s\)\(]+/, '')
+      .trim();
+      
+    if (!cleanLine) continue;
+    
+    // Tách tiếp bằng dấu phẩy nếu dòng chứa nhiều nhãn
+    const parts = cleanLine.split(',');
+    for (let part of parts) {
+      part = part.trim()
+        .replace(/^["'“‘]+|["'”’]+$/g, '') // Xóa dấu nháy bao quanh
+        .replace(/\.$/, '') // Xóa dấu chấm cuối dòng/từ
+        .trim();
+        
+      if (!part) continue;
+      
+      // Bỏ qua nếu từ quá dài (lớn hơn 4 từ hoặc 35 ký tự) vì có thể là câu giải thích/mô tả rác
+      if (part.split(/\s+/).length > 4 || part.length > 35) {
+        continue;
+      }
+      
+      const lowerPart = part.toLowerCase();
+      if (
+        lowerPart === 'object' ||
+        lowerPart === 'objects' ||
+        lowerPart === 'none' ||
+        lowerPart === 'no objects'
+      ) {
+        continue;
+      }
+      
+      items.push(part);
+    }
+  }
+  
+  // Loại bỏ các nhãn trùng lặp (không phân biệt hoa thường)
+  const uniqueItems = [];
+  const seen = new Set();
+  for (const item of items) {
+    const lower = item.toLowerCase();
+    if (!seen.has(lower)) {
+      seen.add(lower);
+      uniqueItems.push(item);
+    }
+  }
+  
+  return uniqueItems;
+};
+
+/**
+ * Bộ giải mã JSON siêu mạnh mẽ để bóc tách, dọn dẹp và sửa các lỗi cú pháp
+ * thường gặp như trailing commas trong phản hồi từ LLM nhỏ.
+ */
+const parseRobustJson = (raw, serviceName) => {
+  if (!raw) return [];
+  let cleaned = String(raw).trim();
+  
+  // Tìm khối mảng JSON [ ... ]
+  const jsonMatch = cleaned.match(/\[([\s\S]*)\]/);
+  if (jsonMatch) {
+    cleaned = jsonMatch[0];
+  }
+  
+  // Dọn dẹp ký tự markdown
+  cleaned = cleaned
+    .replace(/```json/gi, '')
+    .replace(/```/g, '')
+    .trim();
+    
+  // Xử lý trailing commas (dấu phẩy thừa ở cuối trước ngoặc ] hoặc })
+  cleaned = cleaned.replace(/,\s*([\]}])/g, '$1');
+  
+  try {
+    return JSON.parse(cleaned);
+  } catch (error) {
+    console.error(`[${serviceName} JSON Parse Error] Thất bại khi phân tích cú pháp JSON.`);
+    console.error(`[${serviceName} Raw Content]:\n`, raw);
+    throw new Error(`Không thể parse dữ liệu JSON từ ${serviceName}`);
+  }
 };
 
 /**
@@ -78,7 +180,7 @@ const getVocabulary = async (labels) => {
     {
       model: 'openrouter/free', // Tự động chọn model text miễn phí tốt nhất
       messages: [{ role: 'user', content: prompt }],
-      max_tokens: 500,
+      max_tokens: 2000, // Nâng từ 500 lên 2000 để tránh truncation
       temperature: 0.2
     },
     {
@@ -94,18 +196,7 @@ const getVocabulary = async (labels) => {
   console.log(`[OpenRouter Text] Đã tự động chọn model: ${usedModel}`);
 
   const raw = response.data?.choices?.[0]?.message?.content;
-  if (!raw) return [];
-
-  // Parse JSON an toàn
-  try {
-    return JSON.parse(raw);
-  } catch (error) {
-    const jsonMatch = raw.match(/\[.*\]/s);
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]);
-    }
-    throw new Error('Không thể parse dữ liệu JSON từ OpenRouter');
-  }
+  return parseRobustJson(raw, 'OpenRouter');
 };
 
 module.exports = {
