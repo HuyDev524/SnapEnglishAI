@@ -30,11 +30,7 @@ const normalizeVocabulary = (items) => {
     .map(normalizeVocabularyItem);
 };
 
-/**
- * Fallback chain 2: Sinh từ vựng từ các nhãn đồ vật đã nhận diện
- * Gemini -> OpenRouter -> Groq -> Mistral
- * Nếu tất cả đều thất bại, trả về danh sách từ cơ bản chỉ có tiếng Anh.
- */
+
 const getVocabularyFromLabels = async (labels) => {
   // Loại bỏ các nhãn trùng lặp (không phân biệt hoa thường) và giới hạn tối đa 20 nhãn độc lập
   const uniqueLabels = [];
@@ -51,7 +47,6 @@ const getVocabularyFromLabels = async (labels) => {
     }
   }
 
-  // Giới hạn tối đa 20 nhãn để tránh quá tải token và lỗi bị ngắt dòng JSON (truncation)
   const finalLabels = uniqueLabels.slice(0, 20);
 
   if (finalLabels.length === 0) {
@@ -71,7 +66,6 @@ const getVocabularyFromLabels = async (labels) => {
   for (let i = 0; i < sources.length; i++) {
     const source = sources[i];
     
-    // TỐI ƯU: Chỉ đợi 500ms nếu kích hoạt fallback (từ lượt gọi thứ 2 trở đi) để tránh lãng phí thời gian ở lượt đầu
     if (i > 0) {
       console.log(`[Vocabulary] Đang chờ 500ms trước khi gọi fallback ${source.name}...`);
       await delay(500);
@@ -164,13 +158,12 @@ const handleDetect = async (req, res) => {
       });
     }
 
-    // Bước 2: Sinh từ vựng (Vocabulary Generation)
     const { vocabulary, fallback: vocabFallback } = await getVocabularyFromLabels(labels);
 
     return res.status(200).json({
       labels,
       vocabulary,
-      fallback: vocabFallback // null nếu dùng Gemini, 'static' hoặc tên AI khác nếu là fallback
+      fallback: vocabFallback 
     });
   } catch (error) {
     const errorDetails = error.response?.data || error.message;

@@ -47,7 +47,10 @@ const VocabularyCard = ({ word, onSave, isSaved }) => {
           </div>
           
           {word.category && (
-            <span className={`px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${categoryStyle}`}>
+            <span 
+              className="px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1 text-white shadow-sm"
+              style={{ backgroundColor: categoryStyle }}
+            >
               <Tag className="w-3 h-3" />
               {word.category}
             </span>

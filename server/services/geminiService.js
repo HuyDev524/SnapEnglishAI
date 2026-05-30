@@ -103,7 +103,7 @@ const getVocabulary = async (labels) => {
   if (!GEMINI_API_KEY) throw new Error('Thiếu GEMINI_API_KEY trong .env');
   if (!Array.isArray(labels) || labels.length === 0) return [];
 
-  const prompt = `You are an English vocabulary teacher for Vietnamese learners. Given these objects: ${labels.join(', ')}.\nReturn a JSON array of objects. Each object MUST have these exact keys:\n- "english" (the word)\n- "ipa" (phonetic spelling)\n- "vietnamese" (Vietnamese translation)\n- "type" (part of speech, e.g., noun)\n- "example" (a simple English example sentence)\n- "category" (e.g., General, Food, Electronics)\nReturn ONLY a raw JSON array. No markdown format (\`\`\`json). No explanations.`;
+  const prompt = `You are an English vocabulary teacher for Vietnamese learners. Given these objects: ${labels.join(', ')}.\nReturn a JSON array of objects. Each object MUST have these exact keys:\n- "english" (the word)\n- "ipa" (phonetic spelling)\n- "vietnamese" (Vietnamese translation)\n- "type" (part of speech, e.g., noun)\n- "example" (a simple English example sentence)\n- "category" (MUST be one of: Kitchen, Office, Technology, Electronics, Furniture, Nature, Animal, Vehicle, Sport, Clothing, Food, Outdoor, Person, Education, Medical, Entertainment, Beauty, Tools, Accessories, Gadgets, Household, General. VERY IMPORTANT: use "Accessories" for mouse pad/cables/wallet, "Gadgets" for computer mouse/smartwatch, "Household" for remote control/fan/clock.)\nReturn ONLY a raw JSON array. No markdown format (\`\`\`json). No explanations.`;
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_TEXT_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
   // Payload chuẩn của Gemini API cho Text

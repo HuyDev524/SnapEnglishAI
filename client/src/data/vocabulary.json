@@ -78,5 +78,16 @@
   "scissors": { "ipa": "/ˈsɪz.əz/", "vietnamese": "cái kéo", "type": "noun", "example": "Cut the paper with scissors.", "category": "Office" },
   "teddy bear": { "ipa": "/ˈted.i beər/", "vietnamese": "gấu bông", "type": "noun", "example": "The child hugs the teddy bear.", "category": "Furniture" },
   "hair drier": { "ipa": "/heər ˈdraɪ.ər/", "vietnamese": "máy sấy tóc", "type": "noun", "example": "She uses a hair drier after shower.", "category": "Furniture" },
-  "toothbrush": { "ipa": "/ˈtuːθ.brʌʃ/", "vietnamese": "bàn chải đánh răng", "type": "noun", "example": "Brush your teeth with a toothbrush.", "category": "Furniture" }
+  "toothbrush": { "ipa": "/ˈtuːθ.brʌʃ/", "vietnamese": "bàn chải đánh răng", "type": "noun", "example": "Brush your teeth with a toothbrush.", "category": "Furniture" },
+  "mouse pad": { "ipa": "/maʊs pæd/", "vietnamese": "miếng lót chuột", "type": "noun", "example": "I use a mouse pad for my mouse.", "category": "Technology" },
+  "monitor": { "ipa": "/ˈmɒn.ɪ.tər/", "vietnamese": "màn hình máy tính", "type": "noun", "example": "I have a large monitor on my desk.", "category": "Technology" },
+  "headphones": { "ipa": "/ˈhed.fəʊnz/", "vietnamese": "tai nghe", "type": "noun", "example": "He is listening to music with headphones.", "category": "Technology" },
+  "speaker": { "ipa": "/ˈspiː.kər/", "vietnamese": "loa", "type": "noun", "example": "The speaker is very loud.", "category": "Technology" },
+  "usb drive": { "ipa": "/ˌjuː.esˈbiː draɪv/", "vietnamese": "ổ cứng usb", "type": "noun", "example": "Save the file to your usb drive.", "category": "Technology" },
+  "charger": { "ipa": "/ˈtʃɑː.dʒər/", "vietnamese": "cục sạc", "type": "noun", "example": "I need a charger for my phone.", "category": "Technology" },
+  "calculator": { "ipa": "/ˈkæl.kjə.leɪ.tər/", "vietnamese": "máy tính cầm tay", "type": "noun", "example": "Use a calculator for math.", "category": "Office" },
+  "pen": { "ipa": "/pen/", "vietnamese": "cây bút", "type": "noun", "example": "Write your name with a pen.", "category": "Office" },
+  "pencil": { "ipa": "/ˈpen.səl/", "vietnamese": "bút chì", "type": "noun", "example": "Draw a picture with a pencil.", "category": "Office" },
+  "notebook": { "ipa": "/ˈnəʊt.bʊk/", "vietnamese": "cuốn sổ", "type": "noun", "example": "Write it in your notebook.", "category": "Office" },
+  "desk": { "ipa": "/desk/", "vietnamese": "bàn làm việc", "type": "noun", "example": "My desk is very clean.", "category": "Furniture" }
 }

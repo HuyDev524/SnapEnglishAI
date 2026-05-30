@@ -94,8 +94,8 @@ export function useFlashcards() {
     words.forEach(word => {
       if (!word.vietnamese) return; // Chỉ lưu từ hợp lệ
       
-      const category = word.category || 'Chung';
-      const deckName = `Bộ thẻ ${category}`;
+      const category = word.category || 'General';
+      const deckName = category;
       
       const deckIndex = currentDecks.findIndex(d => d.category.toLowerCase() === category.toLowerCase());
       

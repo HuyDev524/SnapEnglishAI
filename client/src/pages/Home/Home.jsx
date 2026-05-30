@@ -114,8 +114,8 @@ const Home = () => {
 
   const handleSaveWord = async (word) => {
     try {
-      const category = word.category || 'Chung';
-      const deckName = `Bộ thẻ ${category}`;
+      const category = word.category || 'General';
+      const deckName = category;
       
       const existingDeck = decks.find(d => d.category.toLowerCase() === category.toLowerCase());
       

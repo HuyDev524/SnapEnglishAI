@@ -5,8 +5,8 @@ const wordSchema = new mongoose.Schema({
   english: { type: String, required: true },
   ipa: { type: String, default: '' },
   vietnamese: { type: String, default: '' },
-  type: { type: String, default: '' },       // Loại từ (noun, verb, adj...)
-  example: { type: String, default: '' }     // Câu ví dụ
+  type: { type: String, default: '' },     
+  example: { type: String, default: '' }    
 });
 
 // Schema cho một bộ thẻ (Deck)

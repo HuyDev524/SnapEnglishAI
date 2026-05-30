@@ -47,7 +47,7 @@ const getVocabulary = async (labels) => {
     return [];
   }
 
-  const prompt = `You are an English vocabulary teacher for Vietnamese learners. Given these objects: ${labels.join(', ')}.\nReturn a JSON array of objects. Each object MUST have these exact keys:\n- "english" (the word)\n- "ipa" (phonetic spelling)\n- "vietnamese" (Vietnamese translation)\n- "type" (part of speech, e.g., noun)\n- "example" (a simple English example sentence)\n- "category" (e.g., General, Food, Electronics)\nReturn ONLY a raw JSON array. No markdown format (\`\`\`json). No explanations.`;
+  const prompt = `You are an English vocabulary teacher for Vietnamese learners. Given these objects: ${labels.join(', ')}.\nReturn a JSON array of objects. Each object MUST have these exact keys:\n- "english" (the word)\n- "ipa" (phonetic spelling)\n- "vietnamese" (Vietnamese translation)\n- "type" (part of speech, e.g., noun)\n- "example" (a simple English example sentence)\n- "category" (MUST be one of: Kitchen, Office, Technology, Electronics, Furniture, Nature, Animal, Vehicle, Sport, Clothing, Food, Outdoor, Person, Education, Medical, Entertainment, Beauty, Tools, Accessories, Gadgets, Household, General. VERY IMPORTANT: use "Accessories" for mouse pad/cables/wallet, "Gadgets" for computer mouse/smartwatch, "Household" for remote control/fan/clock.)\nReturn ONLY a raw JSON array. No markdown format (\`\`\`json). No explanations.`;
 
   const response = await axios.post(
     `${GROQ_BASE_URL}/chat/completions`,
